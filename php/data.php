@@ -38,10 +38,20 @@ if ($decoded['nowtemp'] > 1) {
 require_once('MyMongo.php');
 MyMongo::PushStatus($decoded);
 
-if ($config_ar['alertmailepoch'] + 60 * 60 * 12 < time()) {
+if ($config_ar['alertmailepoch'] + 60 * 60 * 12 < time() // check last email was more than 12H ago.
+ && issetOr($config_ar['noalertepoch'], 0) + 60 * 60 * 12 > time() // check if this alert is new, less than 12H ago it wasn't alert.
+   ) {
    if (isAlert($decoded)) {
-      mail(CREDENTIAL_EMAIL, 'Pellet épuisé?', 'Vérifier niveau de pellet');
+      $headers = array(
+         'CC' => CREDENTIAL_EMAIL_REPLYTO,
+         'Reply-To' => CREDENTIAL_EMAIL_REPLYTO,
+      );
+      mail(CREDENTIAL_EMAIL_DEST, 'Automatique: Pellet épuisé?', "Vérifier niveau de pellet\r\nStatus: http://rika.yupanaengineering.com/gite", $headers);
       $config_ar['alertmailepoch'] = time();
+      $jsonConfigStr = json_encode($config_ar, JSON_PRETTY_PRINT);
+      file_put_contents($configFilePath, $jsonConfigStr);
+   } else {
+      $config_ar['noalertepoch'] = time();
       $jsonConfigStr = json_encode($config_ar, JSON_PRETTY_PRINT);
       file_put_contents($configFilePath, $jsonConfigStr);
    }

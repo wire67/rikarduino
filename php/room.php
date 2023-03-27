@@ -2,6 +2,7 @@
 $configFilePath = "config.json";
 $statusFilePath = "status.json";
 
+require_once('credentials.php');
 require_once('lib.php');
 require_once('level_alert.php');
 $status = json_decode(file_get_contents($statusFilePath), true);
@@ -30,6 +31,8 @@ try {
       $formdata[CFG_ROOM_NAME]['manual'] = (int)$_POST['manual'];
       $formdata[CFG_ROOM_NAME]['frommac'] = $_POST['frommac'];
       $formdata[CFG_ROOM_NAME]['onoffallowed'] = (int)$_POST['onoffallowed'];
+      $formdata[CFG_ROOM_NAME]['onallowed'] = (int)$_POST['onallowed'];
+      $formdata[CFG_ROOM_NAME]['offallowed'] = (int)$_POST['offallowed'];
       // Push user data to array
       $config_ar = $formdata;
       //Convert updated array to JSON
@@ -121,7 +124,7 @@ if (!(@$config_ar[CFG_ROOM_NAME]['manual'])) {
             Température Constante
          </label>
          <label class="rounded border border-<?= ismode(0) ? 'primary' : 'secondary' ?>">
-            <input type="radio" name="manual" value="0" <?= ismode(0) ? 'checked' : '' ?> onclick="document.myform.submit();" />
+            <input type="radio" name="manual" value="0" <?= ismode(0) ? 'checked' : '' ?> onclick="$('#onallowed').attr('checked',true);$('#offallowed').attr('checked',true);document.myform.submit();" />
             Calendrier
          </label>
          <!-- <label class="rounded border border-<?= ismode(2) ? 'primary' : 'secondary' ?>">
@@ -129,13 +132,21 @@ if (!(@$config_ar[CFG_ROOM_NAME]['manual'])) {
             Rika Thermostat
          </label> -->
          <label class="rounded border border-<?= ismode(3) ? 'primary' : 'secondary' ?>">
-            <input type="radio" name="manual" value="3" <?= ismode(3) ? 'checked' : '' ?> onclick="$('#setpoint').val(12);document.myform.submit();" />
+            <input type="radio" name="manual" value="3" <?= ismode(3) ? 'checked' : '' ?> onclick="$('#setpoint').val(12);$('#onallowed').attr('checked',true);$('#offallowed').attr('checked',true);document.myform.submit();" />
             Hors Gel
          </label>
          <!-- <label class="rounded border border-<?= ismode(4) ? 'primary' : 'secondary' ?>">
             <input type="radio" name="manual" value="4" <?= ismode(4) ? 'checked' : '' ?> onclick="document.myform.submit();" disabled="disabled" />
             Rika Standby
          </label> -->
+         <label class="rounded border border-<?= ismode(5) ? 'primary' : 'secondary' ?>">
+            <input type="radio" name="manual" value="5" <?= ismode(5) ? 'checked' : '' ?> onclick="$('#setpoint').val(12);$('#onallowed').attr('checked',true);$('#offallowed').attr('checked',false);document.myform.submit();" />
+            Flame 0%
+         </label>
+         <label class="rounded border border-<?= ismode(6) ? 'primary' : 'secondary' ?>">
+            <input type="radio" name="manual" value="6" <?= ismode(6) ? 'checked' : '' ?> onclick="$('#onallowed').attr('checked',false);$('#offallowed').attr('checked',true);document.myform.submit();" />
+            Off
+         </label>
       </div>
       <div id="div_manual" class="<?= ismode(1) ? 'selected' : 'notselected' ?> text-center mt-2">
          Consigne °C:
@@ -181,9 +192,17 @@ if (!(@$config_ar[CFG_ROOM_NAME]['manual'])) {
          <br>
          MAC: <input name="frommac" type="text" value="<?= issetOr($config_ar[CFG_ROOM_NAME]['frommac'], '') ?>" size="12">
          <br>
-         OnOff Allowed:
+         OnOff Allowed (LEGACY):
          <input name="onoffallowed" type="hidden" value="0" />
-         <input name="onoffallowed" type="checkbox" value="1" <?= issetOr($config_ar[CFG_ROOM_NAME]['onoffallowed'], 0) ? 'checked="checked"' : '' ?>>
+         <input name="onoffallowed" type="checkbox" value="1" id="onoffallowed" <?= issetOr($config_ar[CFG_ROOM_NAME]['onoffallowed'], 0) ? 'checked="checked"' : '' ?>>
+         <br>
+         On Allowed:
+         <input name="onallowed" type="hidden" value="0" />
+         <input name="onallowed" type="checkbox" value="1" id="onallowed" <?= issetOr($config_ar[CFG_ROOM_NAME]['onallowed'], 0) ? 'checked="checked"' : '' ?>>
+         <br>
+         Off Allowed:
+         <input name="offallowed" type="hidden" value="0" />
+         <input name="offallowed" type="checkbox" value="1" id="offallowed" <?= issetOr($config_ar[CFG_ROOM_NAME]['offallowed'], 0) ? 'checked="checked"' : '' ?>>
          <br>
          <pre><?= print_r($status) ?></pre>
       </div>
