@@ -27,7 +27,8 @@
 const String urlFrontend = CREDENTIAL_FRONTEND_URL;
 const String urlBackend = CREDENTIAL_BACKEND_URL;
 
-static bool ONOFF_ALLOWED = true;
+static bool ON_ALLOWED = true;
+static bool OFF_ALLOWED = true;
 static const uint8_t PRESSKEY_ONOFF = 18;
 static const uint8_t PRESSKEY_MINUS = 17;
 static const uint8_t PRESSKEY_PLUS = 4;
@@ -49,7 +50,7 @@ const char *password = CREDENTIALS_PWD;
 #error This code is intended to run on the ESP32 platform! Please check your Tools->Board setting.
 #endif
 AsyncWebServer webServer(80);
-DNSServer dnsServer;
+AsyncDNSServer  dnsServer;
 
 // --- RTC ---
 static ESP32Time rtc;
@@ -255,7 +256,8 @@ void run_getCallendar(void)
          myArray["userbtnlast"] = rikaBtn_toString[userBtnLast];
          myArray["swbtnpress"] = swBtnPressEpoch;
          myArray["swbtnlast"] = rikaBtn_toString[swBtnLast];
-         myArray["onoffallowedstatus"] = ONOFF_ALLOWED ? "true" : "false";
+         myArray["onallowedstatus"]  = ON_ALLOWED  ? "true" : "false";
+         myArray["offallowedstatus"] = OFF_ALLOWED ? "true" : "false";
          String jsonStringOled = JSON.stringify(myArray);
 
          json_array = POST_Request(urlBackend.c_str(), jsonStringOled);
@@ -314,10 +316,17 @@ void run_getCallendar(void)
             }
             if (1)
             {
-               Serial.print("ONOFF_ALLOWED: ");
-               String jsonString = JSON.stringify(my_obj[CFG_ROOM_NAME]["onoffallowed"]);
-               ONOFF_ALLOWED = jsonString.toInt() == 0 ? false : true;
-               Serial.println(ONOFF_ALLOWED);
+               Serial.print("ON_ALLOWED: ");
+               String jsonString = JSON.stringify(my_obj[CFG_ROOM_NAME]["onallowed"]);
+               ON_ALLOWED = jsonString.toInt() == 0 ? false : true;
+               Serial.println(ON_ALLOWED);
+            }
+            if (1)
+            {
+               Serial.print("OFF_ALLOWED: ");
+               String jsonString = JSON.stringify(my_obj[CFG_ROOM_NAME]["offallowed"]);
+               OFF_ALLOWED = jsonString.toInt() == 0 ? false : true;
+               Serial.println(OFF_ALLOWED);
             }
             _myPID.SetTunings(Kp, Ki, Kd);
          }
@@ -740,7 +749,7 @@ void run_extra_logic(void)
          _myPID.SetMode(_myPID.MANUAL);
          rikaStatus = OFF;
       }
-      if (rikaStatus == OFF && temp <= Setpoint && ONOFF_ALLOWED)
+      if (rikaStatus == OFF && temp <= Setpoint && ON_ALLOWED)
       {
          if (millis() - dontSwitchOnTime >= 60 * 1000)
          {
@@ -772,7 +781,7 @@ void run_extra_logic(void)
             _myPID.SetMode(_myPID.AUTOMATIC);
          }
       }
-      if (temp > Setpoint + 2 && rikaStatus == ON && ONOFF_ALLOWED)
+      if (temp > Setpoint + 2 && rikaStatus == ON && OFF_ALLOWED)
       {
          if (millis() - dontSwitchOffTime >= 60 * 1000)
          {
