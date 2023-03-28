@@ -2,6 +2,7 @@
 $configFilePath = "config.json";
 $statusFilePath = "status.json";
 
+require_once('credentials.php');
 require_once('lib.php');
 $status = json_decode(file_get_contents($statusFilePath), true);
 try {
@@ -99,11 +100,6 @@ if (!(@$config_ar[CFG_ROOM_NAME]['manual'])) {
    <?php
    require_once('MyMongo.php');
    $daily_performance = MyMongo::GetPerformance(issetOr($_GET['from'], '-1 days'), issetOr($config_ar[CFG_ROOM_NAME]['frommac'], ''));
-   $daily_performance_upsell_label = array_keys($daily_performance);
-   $daily_conversion_rate =
-      array_map(function ($i) {
-         return round($i['nowtemp'], 2);
-      }, $daily_performance);
 
    $data_nowtemp =
       array_map(function ($k, $v) {

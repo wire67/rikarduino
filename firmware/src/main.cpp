@@ -29,6 +29,7 @@ const String urlBackend = CREDENTIAL_BACKEND_URL;
 
 static bool ON_ALLOWED = true;
 static bool OFF_ALLOWED = true;
+static uint8_t tempmode = 0;
 static const uint8_t PRESSKEY_ONOFF = 18;
 static const uint8_t PRESSKEY_MINUS = 17;
 static const uint8_t PRESSKEY_PLUS = 4;
@@ -258,6 +259,7 @@ void run_getCallendar(void)
          myArray["swbtnlast"] = rikaBtn_toString[swBtnLast];
          myArray["onallowedstatus"]  = ON_ALLOWED  ? "true" : "false";
          myArray["offallowedstatus"] = OFF_ALLOWED ? "true" : "false";
+         myArray["tempmode"] = tempmode;
          String jsonStringOled = JSON.stringify(myArray);
 
          json_array = POST_Request(urlBackend.c_str(), jsonStringOled);
@@ -327,6 +329,13 @@ void run_getCallendar(void)
                String jsonString = JSON.stringify(my_obj[CFG_ROOM_NAME]["offallowed"]);
                OFF_ALLOWED = jsonString.toInt() == 0 ? false : true;
                Serial.println(OFF_ALLOWED);
+            }
+            if (1)
+            {
+               Serial.print("tempmode: ");
+               String jsonString = JSON.stringify(my_obj[CFG_ROOM_NAME]["manual"]);
+               tempmode = jsonString.toInt();
+               Serial.println(tempmode);
             }
             _myPID.SetTunings(Kp, Ki, Kd);
          }
@@ -749,7 +758,7 @@ void run_extra_logic(void)
          _myPID.SetMode(_myPID.MANUAL);
          rikaStatus = OFF;
       }
-      if (rikaStatus == OFF && temp <= Setpoint && ON_ALLOWED)
+      if (rikaStatus == OFF && (5==tempmode || temp <= Setpoint) && ON_ALLOWED )
       {
          if (millis() - dontSwitchOnTime >= 60 * 1000)
          {
@@ -922,6 +931,10 @@ void loop()
    run_pid();
    run_extra_logic();
    wantLvl = Output / (outputMax / wantLvlMax);
+   if(5==tempmode) // Flame 0%
+   {
+      wantLvl = 0;
+   }
 
    run_buttonpress();
 
