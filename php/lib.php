@@ -12,12 +12,12 @@ function emptyThen(&$var, $replacement)
 
 function processCalendar(&$config_ar)
 {
-   $now = new DateTime();
+   $now = (new DateTime())->setTimezone(new DateTimeZone('Europe/Paris'));
    $cal_ar = issetOr($config_ar[CFG_ROOM_NAME]['cal'], []);
    usort($cal_ar, "array_cal_cmp");
    foreach ($cal_ar as $cal) {
       if (!empty($cal['h']) && !empty($cal['temp'])) {
-         $row_time = (new DateTime())->setTime($cal['h'], emptyThen($cal['m'], 0)); //->sub(new DateInterval('PT1H'))
+         $row_time = (new DateTime())->setTimezone(new DateTimeZone('Europe/Paris'))->setTime($cal['h'], emptyThen($cal['m'], 0)); //->sub(new DateInterval('PT1H'))
          $row_temp = (float)($cal['temp']);
          if ($now > $row_time) {
             $config_ar[CFG_ROOM_NAME]['setpoint'] = $row_temp;
