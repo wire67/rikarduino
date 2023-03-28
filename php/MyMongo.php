@@ -69,7 +69,7 @@ class MyMongo
       $ret = MyMongo::GetAllTemps($from, $mac);
       $ar = [];
       foreach ($ret as $key => $val) {
-         $at = $val['at']->toDateTime()->format('Y-m-d H:i:s');
+         $at = $val['at']->toDateTime()->setTimeZone(new DateTimeZone('Europe/Paris'))->format('Y-m-d H:i:s');
          $ar[$at] = $val['data'];
       }
       ksort($ar);
