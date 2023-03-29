@@ -141,7 +141,7 @@ if (!(@$config_ar[CFG_ROOM_NAME]['manual'])) {
          </label> -->
          <label class="rounded border border-<?= ismode(5) ? 'primary' : 'secondary' ?>">
             <input type="radio" name="manual" value="5" <?= ismode(5) ? 'checked' : '' ?> onclick="$('#setpoint').val(12);$('#onallowed').attr('checked',true);$('#offallowed').attr('checked',false);document.myform.submit();" />
-            Flame 0%
+            Flamme 0%
          </label>
          <label class="rounded border border-<?= ismode(6) ? 'primary' : 'secondary' ?>">
             <input type="radio" name="manual" value="6" <?= ismode(6) ? 'checked' : '' ?> onclick="$('#onallowed').attr('checked',false);$('#offallowed').attr('checked',true);document.myform.submit();" />

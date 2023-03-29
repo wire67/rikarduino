@@ -931,7 +931,7 @@ void loop()
    run_pid();
    run_extra_logic();
    wantLvl = Output / (outputMax / wantLvlMax);
-   if(5==tempmode) // Flame 0%
+   if(5==tempmode) // Flamme 0%
    {
       wantLvl = 0;
    }
