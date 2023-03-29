@@ -2,6 +2,7 @@
 $configFilePath = "config.json";
 $statusFilePath = "status.json";
 
+require_once('credentials.php');
 require_once('lib.php');
 header('Content-Type: application/json; charset=utf-8');
 //Get data from existing json file
