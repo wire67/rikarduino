@@ -11,7 +11,7 @@ try {
    // converts json data into array
    $config_ar = json_decode($jsonConfigStr, true);
 
-   if (!(@$config_ar[CFG_ROOM_NAME]['manual'])) {
+   if (isMode(0)) {
       // --- OLD CALENDAR ---
       processCalendar($config_ar);
    }
@@ -45,7 +45,7 @@ try {
    echo 'Caught exception: ',  $e->getMessage(), "\n";
 }
 
-if (!(@$config_ar[CFG_ROOM_NAME]['manual'])) {
+if (isMode(0)) {
    // --- NEW CALENDAR ---
    processCalendar($config_ar);
 }
