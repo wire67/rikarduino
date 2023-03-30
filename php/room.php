@@ -12,7 +12,7 @@ try {
    // converts json data into array
    $config_ar = json_decode($jsonConfigStr, true);
 
-   if (!(@$config_ar[CFG_ROOM_NAME]['manual'])) {
+   if (isMode(0)) {
       // --- OLD CALENDAR ---
       processCalendar($config_ar);
    }
@@ -30,9 +30,9 @@ try {
       $formdata[CFG_ROOM_NAME]['cal'] = $_POST['cal'];
       $formdata[CFG_ROOM_NAME]['manual'] = (int)$_POST['manual'];
       $formdata[CFG_ROOM_NAME]['frommac'] = $_POST['frommac'];
-      $formdata[CFG_ROOM_NAME]['onoffallowed'] = (int)$_POST['onoffallowed'];
       $formdata[CFG_ROOM_NAME]['onallowed'] = (int)$_POST['onallowed'];
       $formdata[CFG_ROOM_NAME]['offallowed'] = (int)$_POST['offallowed'];
+      $formdata[CFG_ROOM_NAME]['udp_enabled'] = (int)$_POST['udp_enabled'];
       // Push user data to array
       $config_ar = $formdata;
       //Convert updated array to JSON
@@ -49,10 +49,12 @@ try {
    echo 'Caught exception: ',  $e->getMessage(), "\n";
 }
 
-if (!(@$config_ar[CFG_ROOM_NAME]['manual'])) {
+if (isMode(0)) {
    // --- NEW CALENDAR ---
    processCalendar($config_ar);
 }
+
+$MAC = $config_ar[CFG_ROOM_NAME]['frommac'];
 
 ?>
 <!doctype html>
@@ -107,9 +109,9 @@ if (!(@$config_ar[CFG_ROOM_NAME]['manual'])) {
       <input type="hidden" value="<?= $config_ar[CFG_ROOM_NAME]['setpoint'] ?>" name="oldsettemp" />
       <div class="nowtemp text-center">
          Thermomètre °C:
-         <?= (issetOr($status[$config_ar[CFG_ROOM_NAME]['frommac']]['timestamp'], 0) + 60 > time()) ?
-            '<h2>' . round(issetOr($status[$config_ar[CFG_ROOM_NAME]['frommac']]['nowtemp'], ''), 1) . '</h2>' :
-            '<span class="badge badge-danger" title="' . (new DateTime())->setTimestamp(issetOr($status[$config_ar[CFG_ROOM_NAME]['frommac']]['timestamp'], 0))->format('Y-m-d\TH:i:s') . '">Hors Ligne</span>'
+         <?= (issetOr($status[$MAC]['timestamp'], 0) + 60 > time()) ?
+            '<h2>' . round(issetOr($status[$MAC]['nowtemp'], ''), 1) . '</h2>' :
+            '<span class="badge badge-danger" title="' . (new DateTime())->setTimestamp(issetOr($status[$MAC]['timestamp'], 0))->format('Y-m-d\TH:i:s') . '">Hors Ligne</span>'
          ?>
          <?php
          $last_alert = get_last_level_alert($config_ar);
@@ -119,43 +121,43 @@ if (!(@$config_ar[CFG_ROOM_NAME]['manual'])) {
          ?>
       </div>
       <div class="text-center mt-2">
-         <label class="rounded border border-<?= ismode(1) ? 'primary' : 'secondary' ?>">
-            <input type="radio" name="manual" value="1" <?= ismode(1) ? 'checked' : '' ?> onclick="document.myform.submit();" />
+         <label class="rounded border border-<?= isMode(1) ? 'primary' : 'secondary' ?>">
+            <input type="radio" name="manual" value="1" <?= isMode(1) ? 'checked' : '' ?> onclick="document.myform.submit();" />
             Température Constante
          </label>
-         <label class="rounded border border-<?= ismode(0) ? 'primary' : 'secondary' ?>">
-            <input type="radio" name="manual" value="0" <?= ismode(0) ? 'checked' : '' ?> onclick="$('#onallowed').attr('checked',true);$('#offallowed').attr('checked',true);document.myform.submit();" />
+         <label class="rounded border border-<?= isMode(0) ? 'primary' : 'secondary' ?>">
+            <input type="radio" name="manual" value="0" <?= isMode(0) ? 'checked' : '' ?> onclick="$('#onallowed').attr('checked',true);$('#offallowed').attr('checked',true);document.myform.submit();" />
             Calendrier
          </label>
-         <!-- <label class="rounded border border-<?= ismode(2) ? 'primary' : 'secondary' ?>">
-            <input type="radio" name="manual" value="2" <?= ismode(2) ? 'checked' : '' ?> onclick="document.myform.submit();" disabled="disabled" />
+         <!-- <label class="rounded border border-<?= isMode(2) ? 'primary' : 'secondary' ?>">
+            <input type="radio" name="manual" value="2" <?= isMode(2) ? 'checked' : '' ?> onclick="document.myform.submit();" disabled="disabled" />
             Rika Thermostat
          </label> -->
-         <label class="rounded border border-<?= ismode(3) ? 'primary' : 'secondary' ?>">
-            <input type="radio" name="manual" value="3" <?= ismode(3) ? 'checked' : '' ?> onclick="$('#setpoint').val(12);$('#onallowed').attr('checked',true);$('#offallowed').attr('checked',true);document.myform.submit();" />
+         <label class="rounded border border-<?= isMode(3) ? 'primary' : 'secondary' ?>">
+            <input type="radio" name="manual" value="3" <?= isMode(3) ? 'checked' : '' ?> onclick="$('#setpoint').val(12);$('#onallowed').attr('checked',true);$('#offallowed').attr('checked',true);document.myform.submit();" />
             Hors Gel
          </label>
-         <!-- <label class="rounded border border-<?= ismode(4) ? 'primary' : 'secondary' ?>">
-            <input type="radio" name="manual" value="4" <?= ismode(4) ? 'checked' : '' ?> onclick="document.myform.submit();" disabled="disabled" />
+         <!-- <label class="rounded border border-<?= isMode(4) ? 'primary' : 'secondary' ?>">
+            <input type="radio" name="manual" value="4" <?= isMode(4) ? 'checked' : '' ?> onclick="document.myform.submit();" disabled="disabled" />
             Rika Standby
          </label> -->
-         <label class="rounded border border-<?= ismode(5) ? 'primary' : 'secondary' ?>">
-            <input type="radio" name="manual" value="5" <?= ismode(5) ? 'checked' : '' ?> onclick="$('#setpoint').val(12);$('#onallowed').attr('checked',true);$('#offallowed').attr('checked',false);document.myform.submit();" />
+         <label class="rounded border border-<?= isMode(5) ? 'primary' : 'secondary' ?>">
+            <input type="radio" name="manual" value="5" <?= isMode(5) ? 'checked' : '' ?> onclick="$('#setpoint').val(12);$('#onallowed').attr('checked',true);$('#offallowed').attr('checked',false);document.myform.submit();" />
             Flamme 0%
          </label>
-         <label class="rounded border border-<?= ismode(6) ? 'primary' : 'secondary' ?>">
-            <input type="radio" name="manual" value="6" <?= ismode(6) ? 'checked' : '' ?> onclick="$('#onallowed').attr('checked',false);$('#offallowed').attr('checked',true);document.myform.submit();" />
+         <label class="rounded border border-<?= isMode(6) ? 'primary' : 'secondary' ?>">
+            <input type="radio" name="manual" value="6" <?= isMode(6) ? 'checked' : '' ?> onclick="$('#onallowed').attr('checked',false);$('#offallowed').attr('checked',true);document.myform.submit();" />
             Off
          </label>
       </div>
-      <div id="div_manual" class="<?= ismode(1) ? 'selected' : 'notselected' ?> text-center mt-2">
+      <div id="div_manual" class="<?= isMode(1) ? 'selected' : 'notselected' ?> text-center mt-2">
          Consigne °C:
          <br>
          <input type="button" value="-" onclick="setpoint.value=parseFloat(setpoint.value)-0.5;$('[name=manual][value=1]').attr('checked',1);document.myform.submit();" />
          <input name="setpoint" id="setpoint" type="text" value="<?= $config_ar[CFG_ROOM_NAME]['setpoint'] ?>" pattern="[0-9]{2}(.[0-9]{1,2})?" size="1">
          <input type="button" value="+" onclick="setpoint.value=parseFloat(setpoint.value)+0.5;$('[name=manual][value=1]').attr('checked',1);document.myform. submit();" />
       </div>
-      <div id="div_calendar" class="<?= ismode(0) ? 'selected' : 'notselected' ?> text-center mt-2">
+      <div id="div_calendar" class="<?= isMode(0) ? 'selected' : 'notselected' ?> text-center mt-2">
          Calendrier:
          <?php
          $i = 0;
@@ -190,11 +192,7 @@ if (!(@$config_ar[CFG_ROOM_NAME]['manual'])) {
          Ki <input name="ki" type="text" value="<?= $config_ar[CFG_ROOM_NAME]['ki'] ?>" pattern="[0-9]{1,2}(.[0-9]{1,4})?" size="1">
          Kd <input name="kd" type="text" value="<?= $config_ar[CFG_ROOM_NAME]['kd'] ?>" pattern="[0-9]{1,2}(.[0-9]{1,4})?" size="1">
          <br>
-         MAC: <input name="frommac" type="text" value="<?= issetOr($config_ar[CFG_ROOM_NAME]['frommac'], '') ?>" size="12">
-         <br>
-         OnOff Allowed (LEGACY):
-         <input name="onoffallowed" type="hidden" value="0" />
-         <input name="onoffallowed" type="checkbox" value="1" id="onoffallowed" <?= issetOr($config_ar[CFG_ROOM_NAME]['onoffallowed'], 0) ? 'checked="checked"' : '' ?>>
+         MAC: <input name="frommac" type="text" value="<?= issetOr($MAC, '') ?>" size="12">
          <br>
          On Allowed:
          <input name="onallowed" type="hidden" value="0" />
@@ -204,11 +202,15 @@ if (!(@$config_ar[CFG_ROOM_NAME]['manual'])) {
          <input name="offallowed" type="hidden" value="0" />
          <input name="offallowed" type="checkbox" value="1" id="offallowed" <?= issetOr($config_ar[CFG_ROOM_NAME]['offallowed'], 0) ? 'checked="checked"' : '' ?>>
          <br>
+         Debug UDP 53000 enabled:
+         <input name="udp_enabled" type="hidden" value="0" />
+         <input name="udp_enabled" type="checkbox" value="1" id="udp_enabled" <?= issetOr($config_ar[CFG_ROOM_NAME]['udp_enabled'], 0) ? 'checked="checked"' : '' ?>>
+         <br>
          <pre><?= print_r($status) ?></pre>
       </div>
    </form>
 
-   <a href="stats.php?from=-12Hours&amp;mac=<?= $config_ar[CFG_ROOM_NAME]['frommac'] ?>">Graphique</a>
+   <a href="stats.php?from=-12Hours&amp;mac=<?= $MAC ?>">Graphique</a>
 
    <script>
       var refresh = 9;

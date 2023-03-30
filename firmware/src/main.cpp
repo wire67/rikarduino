@@ -29,6 +29,7 @@ const String urlBackend = CREDENTIAL_BACKEND_URL;
 
 static bool ON_ALLOWED = true;
 static bool OFF_ALLOWED = true;
+static bool udp_enabled = true;
 static uint8_t tempmode = 0;
 static const uint8_t PRESSKEY_ONOFF = 18;
 static const uint8_t PRESSKEY_MINUS = 17;
@@ -259,6 +260,7 @@ void run_getCallendar(void)
          myArray["swbtnlast"] = rikaBtn_toString[swBtnLast];
          myArray["onallowedstatus"]  = ON_ALLOWED  ? "true" : "false";
          myArray["offallowedstatus"] = OFF_ALLOWED ? "true" : "false";
+         myArray["udp_enabled"] = udp_enabled ? "true" : "false";
          myArray["tempmode"] = tempmode;
          String jsonStringOled = JSON.stringify(myArray);
 
@@ -329,6 +331,13 @@ void run_getCallendar(void)
                String jsonString = JSON.stringify(my_obj[CFG_ROOM_NAME]["offallowed"]);
                OFF_ALLOWED = jsonString.toInt() == 0 ? false : true;
                Serial.println(OFF_ALLOWED);
+            }
+            if (1)
+            {
+               Serial.print("udp_enabled: ");
+               String jsonString = JSON.stringify(my_obj[CFG_ROOM_NAME]["udp_enabled"]);
+               udp_enabled = jsonString.toInt() == 0 ? false : true;
+               Serial.println(udp_enabled);
             }
             if (1)
             {
@@ -514,12 +523,18 @@ void run_serial2udp(void)
             if (memcmp(&buffer[startIdx], &rikaMessageAscii[0][0], 3) == 0)
             {
                isfound = true;
-               Udp.printf("7SEG: %c%c%c", buffer[startIdx + 3], buffer[startIdx + 4], buffer[startIdx + 5]);
+               if(udp_enabled)
+               {
+                  Udp.printf("7SEG: %c%c%c", buffer[startIdx + 3], buffer[startIdx + 4], buffer[startIdx + 5]);
+               }
             }
             else if (memcmp(&buffer[startIdx], &rikaMessageAscii[1][0], 3) == 0)
             {
                isfound = true;
-               Udp.printf("7SEG: %c%c%c%c", buffer[startIdx + 3], buffer[startIdx + 4], buffer[startIdx + 5], buffer[startIdx + 6]);
+               if(udp_enabled)
+               {
+                  Udp.printf("7SEG: %c%c%c%c", buffer[startIdx + 3], buffer[startIdx + 4], buffer[startIdx + 5], buffer[startIdx + 6]);
+               }
             }
 
             for (int j = 0; j < rows; j++)
@@ -532,7 +547,10 @@ void run_serial2udp(void)
                   }
                   if (isallowed && !isfound)
                   {
-                     Udp.printf("%c", 'A' + j);
+                     if(udp_enabled)
+                     {
+                        Udp.printf("%c", 'A' + j);
+                     }
                   }
                   isfound = true;
                   handle_rikaMessage(j);
@@ -541,7 +559,10 @@ void run_serial2udp(void)
             }
             if (isallowed && !isfound)
             {
-               Udp.write(&buffer[startIdx], i - startIdx + 1);
+               if(udp_enabled)
+               {
+                 Udp.write(&buffer[startIdx], i - startIdx + 1);
+               }
             }
             started = false;
             if (isallowed)
